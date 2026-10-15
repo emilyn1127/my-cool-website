@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Boba Clicker! 🧋</title>
+    <!-- FETCHES THE GAEGU FONT FROM GOOGLE -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    
+    <style>
+        /* Forces Gaegu globally across everything */
+        * {
+            font-family: 'Gaegu', 'Comic Sans MS', sans-serif !important;
+            font-weight: 700; /* Makes the font nice and thick */
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #fdf5f0; /* Soft warm creamy milk tea background */
+            color: #4a3319; /* Dark brown text */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 20px; /* Slightly bigger because Gaegu runs small */
+        }
+
+        h1 {
+            color: #704f29;
+            margin-bottom: 5px;
+            font-size: 42px;
+        }
+
+        .main-container {
+            background: white;
+            padding: 30px;
+            border-radius: 35px;
+            border: 4px solid #dcae80;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(112, 79, 41, 0.1);
+        }
+
+        .score-box {
+            font-size: 38px;
+            font-weight: bold;
+            background-color: #f7e7da;
+            padding: 10px 25px;
+            display: inline-block;
+            border-radius: 25px;
+            margin: 15px 0;
+            border: 2px solid #dcae80;
+        }
+
+        /* The giant clickable Boba Cup emoji */
+        .boba-button {
+            font-size: 130px;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            margin: 15px;
+            transition: transform 0.08s ease;
+            filter: drop-shadow(0px 8px 0px #edd2ba);
+        }
+
+        .boba-button:active {
+            transform: scale(0.85) rotate(-3deg);
+        }
+
+        .shop-area {
+            margin-top: 20px;
+            background: #fffdfb;
+            padding: 15px;
+            border-radius: 25px;
+            border: 2px dashed #dcae80;
+        }
+
+        /* Styling for all clickable actions */
+        .game-btn {
+            background-color: #8c6239;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 0px #5c3e21;
+            margin: 5px;
+            transition: 0.1s;
+        }
+
+        .game-btn:hover {
+            background-color: #a1744a;
+        }
+
+        .game-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .about-trigger-btn {
+            background-color: #4a7c59; /* Green button for profile */
+            box-shadow: 0 4px 0px #2f523a;
+            margin-top: 20px;
+        }
+        .about-trigger-btn:hover {
+            background-color: #5c966e;
+        }
+
+        /* ================= POP-UP WINDOW BOX (MODAL) ================= */
+        .modal-overlay {
+            display: none; /* Stays hidden until clicked */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Dims the background */
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 35px;
+            border: 5px solid #4a7c59;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            animation: popUpAnimation 0.25s ease-out;
+        }
+
+        @keyframes popUpAnimation {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .profile-pic {
+            font-size: 70px;
+            background: #eaf2ec;
+            width: 110px;
+            height: 110px;
+            line-height: 110px;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            border: 3px solid #b7d1be;
+        }
+
+        .favorites-list {
+            text-align: left;
+            display: inline-block;
+            font-size: 20px;
+            line-height: 1.8;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN GAME LAYOUT BOX -->
+    <div class="main-container">
+        <h1>🧋 Boba Clicker Mania 🧋</h1>
+        <p style="margin: 0; color: #8a6d4d;">Tap the giant boba cup to mix delicious drinks!</p>
+        
+        <div class="score-box">
+            Boba: <span id="scoreText">0</span>
+        </div>
+        
+        <br>
+        <!-- GAME CLICK ENGINE BUTTON -->
+        <div class="boba-button" id="clickButton">🧋</div>
+        <br>
+
+        <div class="shop-area">
+            <h3 style="margin: 0 0 10px 0; font-size: 22px;">🛒 Straw Upgrades</h3>
+            <button class="game-btn" id="buyStrawButton">Buy Big Straw (Cost: 15)</button>
+            <p style="font-size: 16px; color: #8a6d4d; margin: 8px 0 0 0;" id="strawInfo">Straws Owned: 0 (+1 boba/sec)</p>
+        </div>
+
+        <!-- BUTTON TO TRIGGER POP-UP -->
+        <button class="game-btn about-trigger-btn" id="openAboutButton">👤 View All About Me</button>
+    </div>
+
+
+    <!-- ================= THE HIDDEN POP-UP BOX WINDOW ================= -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal-content">
+            <div class="profile-pic">🚀</div>
+            <h2 style="color: #4a7c59; margin-top: 0; font-size: 32px;">👤 All About Me</h2>
+            
+            <p style="font-size: 20px; line-height: 1.5; color: #333;">
+                Hi! I am 10 years old and I am learning how to code websites. 
+                I love building software apps, solving logic puzzles, and designing customizable web clicker dashboards!
+            </p>
+
+            <h3 style="color: #4a7c59; margin-bottom: 5px; font-size: 24px;">⭐ My Favorites</h3>
+            <ul class="favorites-list">
+                <li>🎮 <strong>Games:</strong> Minecraft & Roblox</li>
+                <li>🍕 <strong>Food:</strong> Pepperoni Pizza</li>
+                <li>💻 <strong>Hobby:</strong> Coding Custom Tech</li>
+                <li>🧋 <strong>Drink:</strong> Brown Sugar Boba</li>
+            </ul>
+
+            <br><br>
+            <!-- BUTTON TO CLOSE POP-UP -->
+            <button class="game-btn" id="closeAboutButton" style="background-color: #d9534f; box-shadow: 0 4px 0px #b53b37;">Close Window</button>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT APP MECHANICS ================= -->
+    <script>
+        // Simple game tracking numbers
+        let bobaCount = 0;
+        let strawCount = 0;
+        let strawPrice = 15;
+
+        // Fetching page targets
+        const scoreText = document.getElementById('scoreText');
+        const clickButton = document.getElementById('clickButton');
+        const buyStrawButton = document.getElementById('buyStrawButton');
+        const strawInfo = document.getElementById('strawInfo');
+
+        // Fetching Pop-up Targets
+        const aboutModal = document.getElementById('aboutModal');
+        const openAboutButton = document.getElementById('openAboutButton');
+        const closeAboutButton = document.getElementById('closeAboutButton');
+
+        // 🧋 Click Boba Engine
+        clickButton.onclick = function() {
+            bobaCount = bobaCount + 1;
+            scoreText.innerText = bobaCount;
+        };
+
+        // 🛒 Buying straws from shop
+        buyStrawButton.onclick = function() {
+            if (bobaCount >= strawPrice) {
+                bobaCount = bobaCount - strawPrice;
+                strawCount = strawCount + 1;
+                strawPrice = Math.round(strawPrice * 1.4);
+                
+                // Draw updated scores instantly
+                scoreText.innerText = bobaCount;
+                buyStrawButton.innerText = "Buy Big Straw (Cost: " + strawPrice + ")";
+                strawInfo.innerText = "Straws Owned: " + strawCount + " (+" + strawCount + " boba/sec)";
+            } else {
+                alert("You don't have enough boba drinks yet! Keep tapping that cup!");
+            }
+        };
+
+        // 🕒 Auto-Clicker clock loop ticking every 1 second
+        setInterval(function() {
+            if (strawCount > 0) {
+                bobaCount = bobaCount + strawCount;
+                scoreText.innerText = bobaCount;
+            }
+        }, 1000);
+
+        // ================= POP-UP WINDOW LOGIC =================
+        
+        // When you click "View All About Me", change display from 'none' to 'flex'
+        openAboutButton.onclick = function() {
+            aboutModal.style.display = "flex";
+        };
+
+        // When you click "Close Window", change display right back to 'none'
+        closeAboutButton.onclick = function() {
+            aboutModal.style.display = "none";
+        };
+    </script>
+
+</body>
+</html>
